@@ -450,7 +450,8 @@ async function runIgnoreBrowser(
       console.log(pc.yellow(`  ⚠️  ${autoSelectedCount} sensitive files auto-detected and pre-selected`));
     }
     console.log('');
-    console.log(pc.dim('  ↑/↓ navigate • space toggle • → expand • ← collapse • enter confirm'));
+    console.log(pc.dim('  ↑/↓ navigate • space toggle • → expand • ← collapse'))
+    console.log(pc.dim('  a select all • n deselect all • enter confirm'));
     console.log('');
     console.log(pc.dim(`  📁 ${rootPath}`));
     console.log('');
@@ -561,8 +562,17 @@ async function runIgnoreBrowser(
       } else if (key.name === 'right' || key.name === 'l') {
         const node = flatList[cursor];
         if (node.isDirectory && !node.expanded) {
+          const wasSelected = selected.has(node.path);
           node.expanded = true;
           flatList = flattenTree(tree);
+          // If the folder was selected, select all newly visible children too
+          if (wasSelected) {
+            for (const child of flatList) {
+              if (child.path.startsWith(node.path + '/')) {
+                selected.add(child.path);
+              }
+            }
+          }
           render();
         }
       } else if (key.name === 'left' || key.name === 'h') {
@@ -573,6 +583,16 @@ async function runIgnoreBrowser(
           cursor = Math.min(cursor, flatList.length - 1);
           render();
         }
+      } else if (str === 'a' || str === 'A') {
+        // Select all visible items
+        for (const node of flatList) {
+          selected.add(node.path);
+        }
+        render();
+      } else if (str === 'n' || str === 'N') {
+        // Deselect all
+        selected.clear();
+        render();
       } else if (key.name === 'return') {
         cleanup();
 
