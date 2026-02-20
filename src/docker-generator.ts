@@ -113,12 +113,8 @@ function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): str
   // Mount .clawignore
   mounts.push(`${home}/.openclaw/.clawignore:/home/node/.openclaw/.clawignore:ro`);
 
-  // Mount OpenClaw workspace files (AGENTS.md, SOUL.md, etc.)
-  // Note: Can't mount the whole workspace dir because Docker can't overlay mounts
-  const workspaceFiles = ['AGENTS.md', 'SOUL.md', 'TOOLS.md', 'USER.md', 'MEMORY.md', 'IDENTITY.md', 'HEARTBEAT.md'];
-  for (const file of workspaceFiles) {
-    mounts.push(`${home}/.openclaw/workspace/${file}:/home/node/.openclaw/workspace/${file}`);
-  }
+  // Mount the entire workspace directory (so OpenClaw can create subdirectories)
+  mounts.push(`${home}/.openclaw/workspace:/home/node/.openclaw/workspace`);
 
   // Mount each allowed path into the workspace as subdirectories
   for (const sourcePath of pathsToMount) {
