@@ -526,6 +526,7 @@ async function runIgnoreBrowser(
       } else if (key.name === 'space') {
         const node = flatList[cursor];
         if (selected.has(node.path)) {
+          // Deselecting: make this item VISIBLE to the AI
           selected.delete(node.path);
           // If directory, also deselect children
           if (node.isDirectory) {
@@ -535,7 +536,17 @@ async function runIgnoreBrowser(
               }
             }
           }
+          // IMPORTANT: Also deselect all parent folders so this item is accessible
+          // If a parent is hidden, the child won't be mounted even if deselected
+          const parts = node.path.split('/');
+          for (let i = 1; i < parts.length; i++) {
+            const parentPath = parts.slice(0, i).join('/');
+            if (parentPath && selected.has(parentPath)) {
+              selected.delete(parentPath);
+            }
+          }
         } else {
+          // Selecting: HIDE this item from the AI
           selected.add(node.path);
           // If directory, also select all children
           if (node.isDirectory) {
