@@ -538,7 +538,7 @@ async function runNonDockerSetup() {
       `${pc.yellow('!')} Enforcement is ${pc.bold('NOT ACTIVE')} without Docker`,
       '',
       'To enable enforcement, set up Docker:',
-      pc.cyan('  npx clawignore-setup --help-docker'),
+      pc.cyan('  npx clawignore --help-docker'),
     ].join('\n'),
     'Warning: Advisory Mode Only'
   );

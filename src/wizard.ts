@@ -208,7 +208,7 @@ export async function runDockerHelpWizard(
       console.log('  4. Wait for Docker to start (whale icon in menu bar)');
       console.log('');
       console.log('  5. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     } else if (os === 'win32') {
       console.log('  1. Download Docker Desktop for Windows:');
       console.log(pc.cyan('     https://docs.docker.com/desktop/install/windows-install/'));
@@ -220,7 +220,7 @@ export async function runDockerHelpWizard(
       console.log('  4. Launch Docker Desktop');
       console.log('');
       console.log('  5. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     } else {
       // Linux
       console.log('  1. Install Docker Engine:');
@@ -235,7 +235,7 @@ export async function runDockerHelpWizard(
       console.log(pc.cyan('     docker run hello-world'));
       console.log('');
       console.log('  5. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     }
   } else {
     // Docker not running
@@ -250,14 +250,14 @@ export async function runDockerHelpWizard(
       console.log('  2. Wait for the whale icon in your menu bar to stop animating');
       console.log('');
       console.log('  3. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     } else if (os === 'win32') {
       console.log('  1. Open Docker Desktop from Start Menu');
       console.log('');
       console.log('  2. Wait for Docker to start (icon in system tray)');
       console.log('');
       console.log('  3. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     } else {
       // Linux
       console.log('  1. Start the Docker service:');
@@ -267,7 +267,7 @@ export async function runDockerHelpWizard(
       console.log(pc.cyan('     docker ps'));
       console.log('');
       console.log('  3. Run this setup again:');
-      console.log(pc.cyan('     npx clawignore-setup'));
+      console.log(pc.cyan('     npx clawignore'));
     }
   }
 

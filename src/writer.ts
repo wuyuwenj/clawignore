@@ -3,7 +3,7 @@ import { join } from 'path';
 
 const HEADER = `# Clawignore - Files hidden from OpenClaw AI agent
 # Uses .gitignore syntax
-# https://github.com/yourrepo/clawignore-setup
+# https://github.com/wuyuwenj/clawignore
 #
 # Files listed here will not be mounted into the Docker container,
 # making them completely inaccessible to the AI agent.
@@ -178,7 +178,7 @@ export async function appendToClawignore(
     return; // Nothing new to add
   }
 
-  content = content.trimEnd() + '\n\n# Added by clawignore-setup\n';
+  content = content.trimEnd() + '\n\n# Added by clawignore\n';
   for (const pattern of newPatterns) {
     content += `${pattern}\n`;
   }
