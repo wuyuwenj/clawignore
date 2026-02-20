@@ -440,6 +440,8 @@ async function runDockerSetupWithClawignore(workspace: string) {
     const s4 = p.spinner();
     s4.start('Starting OpenClaw in Docker...');
     try {
+      // Stop existing containers first to ensure clean restart with new config
+      await execAsync(`cd "${openclawRoot}" && docker compose down 2>/dev/null || true`);
       await execAsync(`cd "${openclawRoot}" && docker compose up -d`);
       s4.stop('OpenClaw started successfully!');
 
