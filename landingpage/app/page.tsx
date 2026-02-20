@@ -8,7 +8,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
-    navigator.clipboard.writeText("npx clawignore-setup");
+    navigator.clipboard.writeText("npx clawignore");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -42,7 +42,7 @@ export default function Home() {
               <Icon icon="mdi:github" width={18} />
               <span className="hidden sm:inline">GitHub</span>
             </a>
-            <a href="https://www.npmjs.com/package/clawignore-setup" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-2 hover:text-white transition-colors">
+            <a href="https://www.npmjs.com/package/clawignore" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-2 hover:text-white transition-colors">
               <Icon icon="solar:box-linear" width={18} />
               NPM
             </a>
@@ -74,7 +74,7 @@ export default function Home() {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-claw/50 to-purple-600/50 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-500"></div>
               <div className="relative flex items-center bg-black border border-white/10 rounded-lg px-4 py-3 min-w-[300px] md:min-w-[400px]">
                 <span className="text-claw mr-3 select-none">$</span>
-                <code className="font-mono text-sm text-slate-200 flex-1 text-left">npx clawignore-setup</code>
+                <code className="font-mono text-sm text-slate-200 flex-1 text-left">npx clawignore</code>
                 <button className="ml-4 text-slate-500 group-hover:text-white transition-colors" aria-label="Copy to clipboard">
                   {copied ? (
                     <Icon icon="solar:check-circle-linear" width={20} className="text-green-400" />
@@ -84,7 +84,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <span className="text-xs text-slate-500 font-mono">v1.0.4 • MIT License</span>
+            <span className="text-xs text-slate-500 font-mono">v1.0.0 • MIT License</span>
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function Home() {
                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
                 <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
               </div>
-              <div className="flex-1 text-center text-xs text-slate-500 font-medium font-sans opacity-60">clawignore-setup — zsh — 80x24</div>
+              <div className="flex-1 text-center text-xs text-slate-500 font-medium font-sans opacity-60">clawignore — zsh — 80x24</div>
             </div>
 
             {/* Terminal Body */}
@@ -194,7 +194,7 @@ export default function Home() {
             </div>
             <h3 className="text-lg font-medium text-white mb-3 tracking-tight">Interactive UI</h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Easily toggle files and folders with an intuitive arrow-key interface, or write custom <code className="bg-white/10 px-1 py-0.5 rounded text-xs font-mono">.clawignore</code> rules.
+              Easily toggle files and folders with an intuitive arrow-key interface. Re-run anytime to update your configuration.
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export default function Home() {
 
           <div className="flex items-center gap-6">
             <span className="text-xs text-slate-600">Built for OpenClaw</span>
-            <span className="text-xs text-slate-600">© 2024</span>
+            <span className="text-xs text-slate-600">© 2026</span>
           </div>
         </div>
       </footer>
