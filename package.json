@@ -1,6 +1,6 @@
 {
   "name": "clawignore-setup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Security setup wizard for OpenClaw - block sensitive files from AI agent access",
   "bin": {
     "clawignore-setup": "dist/index.js"
