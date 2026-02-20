@@ -172,95 +172,18 @@ async function main() {
 }
 
 async function handleNoDocker(reason: 'not_installed' | 'not_running') {
-  const message = reason === 'not_installed'
-    ? 'Docker not detected on this system.'
-    : 'Docker is installed but not running.';
-
-  p.log.warn(message);
+  if (reason === 'not_installed') {
+    p.log.warn('Docker not detected.');
+  } else {
+    p.log.warn('Docker is installed but not running.');
+  }
 
   console.log('');
-  console.log(pc.dim('  .clawignore requires Docker to enforce file blocking'));
-  console.log(pc.dim('  securely. Without Docker, blocked files can still be'));
-  console.log(pc.dim('  accessed through shell commands.'));
+  console.log(pc.dim('  clawignore requires Docker to securely block files from AI access.'));
+  console.log(pc.dim('  Without Docker, the AI can bypass blocks using shell commands.'));
   console.log('');
 
-  const choice = await p.select({
-    message: 'What would you like to do?',
-    options: [
-      {
-        value: 'create_anyway',
-        label: 'Create .clawignore anyway',
-        hint: 'basic protection only'
-      },
-      {
-        value: 'help_docker',
-        label: 'Help me set up Docker',
-        hint: 'recommended'
-      },
-      {
-        value: 'exit',
-        label: 'Exit'
-      },
-    ],
-  });
-
-  if (p.isCancel(choice) || choice === 'exit') {
-    p.cancel('Setup cancelled');
-    process.exit(0);
-  }
-
-  if (choice === 'help_docker') {
-    await runDockerHelpWizard(reason);
-    return;
-  }
-
-  if (choice === 'create_anyway') {
-    await runNonDockerSetup();
-  }
-}
-
-async function handleNoDockerCompose(workspace: string) {
-  p.log.warn('No docker-compose.yml found.');
-
-  console.log('');
-  console.log(pc.dim('  Your OpenClaw is running in CLI mode (without Docker).'));
-  console.log(pc.dim('  To enforce .clawignore securely, we can generate a'));
-  console.log(pc.dim('  docker-compose.yml that only mounts allowed files.'));
-  console.log('');
-
-  const choice = await p.select({
-    message: 'What would you like to do?',
-    options: [
-      {
-        value: 'generate',
-        label: 'Generate docker-compose.yml for me',
-        hint: 'recommended - secure enforcement'
-      },
-      {
-        value: 'create_anyway',
-        label: 'Create .clawignore only',
-        hint: 'no Docker - advisory mode'
-      },
-      {
-        value: 'exit',
-        label: 'Exit'
-      },
-    ],
-  });
-
-  if (p.isCancel(choice) || choice === 'exit') {
-    p.cancel('Setup cancelled');
-    process.exit(0);
-  }
-
-  if (choice === 'generate') {
-    await runDockerSetupWithClawignore(workspace);
-    return;
-  }
-
-  if (choice === 'create_anyway') {
-    await runNonDockerSetup();
-  }
+  await runDockerHelpWizard(reason);
 }
 
 async function runDockerSetupWithClawignore(workspace: string) {
@@ -534,47 +457,6 @@ async function runDockerSetupWithClawignore(workspace: string) {
   }
 
   p.outro(pc.green('Your secrets are now protected!'));
-}
-
-async function runNonDockerSetup() {
-  p.log.warn(pc.yellow('⚠️  Creating .clawignore without Docker enforcement'));
-  console.log('');
-  console.log(pc.dim('  This file will be advisory only. OpenClaw may still'));
-  console.log(pc.dim('  be able to access these files through shell commands.'));
-  console.log(pc.dim('  For full protection, consider switching to Docker.'));
-  console.log('');
-
-  // Try to find a workspace directory
-  const workspace = process.cwd();
-
-  const s = p.spinner();
-  s.start('Scanning for sensitive files...');
-  const sensitiveFiles = await scanForSensitiveFiles(workspace);
-  s.stop(`Found ${sensitiveFiles.length} potentially sensitive files`);
-
-  const selectedFiles = await runWizard(sensitiveFiles, workspace);
-
-  if (selectedFiles.length === 0) {
-    p.cancel('No files selected');
-    process.exit(0);
-  }
-
-  const clawignorePath = await writeClawignore(workspace, selectedFiles);
-
-  console.log('');
-  p.note(
-    [
-      `${pc.yellow('!')} .clawignore created at ${clawignorePath}`,
-      `${pc.yellow('!')} ${selectedFiles.length} files/patterns listed`,
-      `${pc.yellow('!')} Enforcement is ${pc.bold('NOT ACTIVE')} without Docker`,
-      '',
-      'To enable enforcement, set up Docker:',
-      pc.cyan('  npx clawignore --help-docker'),
-    ].join('\n'),
-    'Warning: Advisory Mode Only'
-  );
-
-  p.outro(pc.yellow('Setup complete (advisory mode)'));
 }
 
 main().catch((err) => {
