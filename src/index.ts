@@ -360,6 +360,37 @@ async function runDockerSetupWithClawignore(workspace: string) {
 
   s2.stop('Docker configuration generated');
 
+  // Check for old sessions with incompatible paths
+  const { rm } = await import('fs/promises');
+  const { existsSync, readdirSync } = await import('fs');
+  const { join } = await import('path');
+
+  const sessionsDir = join(home, '.openclaw/agents/main/sessions');
+  const hasOldSessions = existsSync(sessionsDir) && readdirSync(sessionsDir).length > 0;
+
+  if (hasOldSessions) {
+    console.log('');
+    p.log.warn('Found existing session data with host paths.');
+    console.log(pc.dim('  Old sessions contain paths like /Users/... which don\'t work inside Docker.'));
+    console.log(pc.dim('  Clearing them prevents "permission denied" errors.'));
+    console.log('');
+
+    const clearSessions = await p.confirm({
+      message: 'Clear old session data? (Recommended for Docker)',
+      initialValue: true,
+    });
+
+    if (!p.isCancel(clearSessions) && clearSessions) {
+      try {
+        await rm(sessionsDir, { recursive: true, force: true });
+        p.log.success('Cleared old sessions');
+      } catch {
+        p.log.warn('Could not clear sessions automatically. You may need to run:');
+        console.log(pc.cyan(`  rm -rf ${sessionsDir}`));
+      }
+    }
+  }
+
   // Show summary
   console.log('');
   const summaryLines = [
