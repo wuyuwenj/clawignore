@@ -123,6 +123,12 @@ function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): str
   // Mount each allowed path into the workspace as subdirectories
   for (const sourcePath of pathsToMount) {
     const mountName = basename(sourcePath);
+
+    // Skip .openclaw directory - it's already mounted separately and would conflict
+    if (mountName === '.openclaw' || sourcePath.endsWith('/.openclaw')) {
+      continue;
+    }
+
     const containerPath = `/home/node/.openclaw/workspace/${mountName}`;
     mounts.push(`${sourcePath}:${containerPath}`);
   }
