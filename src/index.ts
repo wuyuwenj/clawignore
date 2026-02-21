@@ -441,8 +441,8 @@ async function runDockerSetupWithClawignore(workspace: string) {
     s4.start('Starting OpenClaw in Docker...');
     try {
       // Stop existing containers first to ensure clean restart with new config
-      await execAsync(`cd "${openclawRoot}" && docker compose down 2>/dev/null || true`);
-      await execAsync(`cd "${openclawRoot}" && docker compose up -d`);
+      await execAsync(`cd "${openclawRoot}" && docker compose down 2>/dev/null || true`, { timeout: 60000 });
+      await execAsync(`cd "${openclawRoot}" && docker compose up -d`, { timeout: 120000 });
       s4.stop('OpenClaw started successfully!');
 
       console.log('');
@@ -451,7 +451,7 @@ async function runDockerSetupWithClawignore(workspace: string) {
       console.log(pc.dim('  Dashboard: ') + pc.cyan('http://localhost:18789'));
       console.log(pc.dim('  Logs: ') + pc.cyan(`cd ${openclawRoot} && docker compose logs -f`));
     } catch (err) {
-      s3.stop('Failed to start Docker');
+      s4.stop('Failed to start Docker');
       p.log.error('Could not start Docker automatically');
       console.log(pc.dim('  Run manually:'));
       console.log(pc.cyan(`  cd ${openclawRoot} && docker compose up -d`));
