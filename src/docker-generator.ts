@@ -1,4 +1,4 @@
-import { writeFile, readFile } from 'fs/promises';
+import { writeFile, readFile, stat } from 'fs/promises';
 import { join, basename } from 'path';
 import { homedir } from 'os';
 
@@ -27,7 +27,7 @@ export async function generateDockerCompose(config: DockerComposeConfig): Promis
   const pathsToMount = allPaths.filter(p => !isIgnored(p, ignoredPaths));
 
   // Generate volume mounts
-  const volumeMounts = generateVolumeMounts(openclawRoot, pathsToMount);
+  const volumeMounts = await generateVolumeMounts(openclawRoot, pathsToMount);
 
   // Generate docker-compose.yml content
   const composeContent = generateComposeYaml(volumeMounts);
@@ -96,7 +96,7 @@ function isIgnored(path: string, ignoredPaths: string[]): boolean {
   return false;
 }
 
-function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): string[] {
+async function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): Promise<string[]> {
   const mounts: string[] = [];
   const home = homedir();
 
@@ -117,12 +117,23 @@ function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): str
   mounts.push(`${home}/.openclaw/workspace:/home/node/.openclaw/workspace`);
 
   // Mount each allowed path into the workspace as subdirectories
+  // Only mount directories - VirtioFS on macOS cannot overlay files on directory mounts
   for (const sourcePath of pathsToMount) {
     const mountName = basename(sourcePath);
 
     // Skip .openclaw directory - it's already mounted separately and would conflict
     if (mountName === '.openclaw' || sourcePath.endsWith('/.openclaw')) {
       continue;
+    }
+
+    // Check if this is a directory (skip files to avoid VirtioFS mount conflicts)
+    try {
+      const stats = await stat(sourcePath);
+      if (!stats.isDirectory()) {
+        continue; // Skip files - only mount directories
+      }
+    } catch {
+      continue; // Skip if we can't stat the path
     }
 
     const containerPath = `/home/node/.openclaw/workspace/${mountName}`;
