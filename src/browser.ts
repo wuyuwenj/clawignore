@@ -131,8 +131,8 @@ function isSensitivePath(name: string, path: string): boolean {
 }
 
 export interface BrowseResult {
-  ignoredPaths: string[];    // Paths user selected to HIDE
-  allPaths: string[];        // All top-level paths found
+  ignoredPaths: string[];    // Paths user selected to HIDE (for .clawignore)
+  mountPaths: string[];      // Specific paths to mount (can be any depth)
 }
 
 interface SensitiveFileItem {
@@ -160,7 +160,7 @@ export async function browseAndSelectIgnored(): Promise<BrowseResult> {
     const overviewResult = await runSensitiveFilesOverview(sensitiveFiles);
     if (overviewResult === null) {
       // User cancelled
-      return { ignoredPaths: [], allPaths: [] };
+      return { ignoredPaths: [], mountPaths: [] };
     }
     preSelectedPaths = overviewResult;
   }
@@ -596,12 +596,26 @@ async function runIgnoreBrowser(
       } else if (key.name === 'return') {
         cleanup();
 
-        // Get all top-level paths
-        const allPaths = flatList
-          .filter(n => n.depth === 0)
+        // Get all visible paths (not selected/hidden)
+        const visiblePaths = flatList
+          .filter(n => !selected.has(n.path))
           .map(n => n.path);
 
-        // Get ignored paths (only top-level to avoid redundancy)
+        // Get mount paths: visible paths where no visible ancestor exists
+        // This gives us the "root" of each visible subtree
+        const mountPaths = visiblePaths.filter(p => {
+          const parts = p.split('/');
+          // Check if any ancestor is also visible
+          for (let i = 1; i < parts.length; i++) {
+            const ancestorPath = parts.slice(0, i).join('/');
+            if (ancestorPath && visiblePaths.includes(ancestorPath)) {
+              return false; // Ancestor is visible, it will be mounted instead
+            }
+          }
+          return true;
+        });
+
+        // Get ignored paths (for .clawignore documentation)
         const ignoredPaths = [...selected].filter(p => {
           // Only include if no parent is already selected
           const parts = p.split('/');
@@ -614,10 +628,10 @@ async function runIgnoreBrowser(
           return true;
         });
 
-        resolve({ ignoredPaths, allPaths });
+        resolve({ ignoredPaths, mountPaths });
       } else if (key.name === 'escape' || (key.ctrl && key.name === 'c')) {
         cleanup();
-        resolve({ ignoredPaths: [], allPaths: [] });
+        resolve({ ignoredPaths: [], mountPaths: [] });
       }
     };
 

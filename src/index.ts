@@ -249,7 +249,7 @@ async function runDockerSetupWithClawignore(workspace: string) {
 
   const { browseAndSelectIgnored } = await import('./browser.js');
 
-  let browseResult: { ignoredPaths: string[]; allPaths: string[] };
+  let browseResult: { ignoredPaths: string[]; mountPaths: string[] };
   try {
     browseResult = await browseAndSelectIgnored();
   } catch (err) {
@@ -258,15 +258,14 @@ async function runDockerSetupWithClawignore(workspace: string) {
     process.exit(1);
   }
 
-  const { ignoredPaths, allPaths } = browseResult;
+  const { ignoredPaths, mountPaths } = browseResult;
 
-  if (allPaths.length === 0) {
-    p.log.warn('No folders found. Cancelled.');
+  if (mountPaths.length === 0) {
+    p.log.warn('No folders selected. Cancelled.');
     process.exit(0);
   }
 
-  const mountedCount = allPaths.length - ignoredPaths.length;
-  p.log.success(`${pc.green(mountedCount + ' folders')} will be accessible to OpenClaw`);
+  p.log.success(`${pc.green(mountPaths.length + ' folders')} will be accessible to OpenClaw`);
   p.log.success(`${pc.red(ignoredPaths.length + ' items')} will be HIDDEN`);
 
   // Generate docker-compose.yml
@@ -277,7 +276,7 @@ async function runDockerSetupWithClawignore(workspace: string) {
 
   const { composePath, envPath, clawignorePath } = await generateDockerCompose({
     openclawRoot,
-    allPaths,
+    mountPaths,
     ignoredPaths,
   });
 
@@ -324,12 +323,11 @@ async function runDockerSetupWithClawignore(workspace: string) {
     pc.bold('Mounted folders (accessible to AI):'),
   ];
 
-  const mountedPaths = allPaths.filter(p => !ignoredPaths.some(ip => p === ip || p.startsWith(ip + '/')));
-  for (const path of mountedPaths.slice(0, 5)) {
+  for (const path of mountPaths.slice(0, 5)) {
     summaryLines.push(`  ${pc.green('✓')} ${path}`);
   }
-  if (mountedPaths.length > 5) {
-    summaryLines.push(pc.dim(`  ... and ${mountedPaths.length - 5} more`));
+  if (mountPaths.length > 5) {
+    summaryLines.push(pc.dim(`  ... and ${mountPaths.length - 5} more`));
   }
 
   if (ignoredPaths.length > 0) {

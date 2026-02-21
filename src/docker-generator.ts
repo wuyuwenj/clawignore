@@ -6,8 +6,8 @@ const DOCKER_IMAGE = 'alpine/openclaw:latest';
 
 interface DockerComposeConfig {
   openclawRoot: string;
-  allPaths: string[];        // All paths user can see
-  ignoredPaths: string[];    // Paths to NOT mount
+  mountPaths: string[];      // Specific paths to mount (can be any depth)
+  ignoredPaths: string[];    // Paths to NOT mount (for .clawignore)
   gatewayToken?: string;
 }
 
@@ -17,17 +17,14 @@ export async function generateDockerCompose(config: DockerComposeConfig): Promis
   clawignorePath: string;
   dockerConfigPath: string;
 }> {
-  const { openclawRoot, allPaths, ignoredPaths } = config;
+  const { openclawRoot, mountPaths, ignoredPaths } = config;
   const home = homedir();
 
   // Generate a gateway token if not provided
   const gatewayToken = config.gatewayToken || generateToken();
 
-  // Calculate paths to mount (all paths minus ignored)
-  const pathsToMount = allPaths.filter(p => !isIgnored(p, ignoredPaths));
-
-  // Generate volume mounts
-  const volumeMounts = await generateVolumeMounts(openclawRoot, pathsToMount);
+  // Generate volume mounts using mountPaths directly
+  const volumeMounts = await generateVolumeMounts(openclawRoot, mountPaths);
 
   // Generate docker-compose.yml content
   const composeContent = generateComposeYaml(volumeMounts);
@@ -87,16 +84,7 @@ function generateToken(): string {
   return token;
 }
 
-function isIgnored(path: string, ignoredPaths: string[]): boolean {
-  for (const ignored of ignoredPaths) {
-    if (path === ignored || path.startsWith(ignored + '/')) {
-      return true;
-    }
-  }
-  return false;
-}
-
-async function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]): Promise<string[]> {
+async function generateVolumeMounts(openclawRoot: string, mountPaths: string[]): Promise<string[]> {
   const mounts: string[] = [];
   const home = homedir();
 
@@ -116,13 +104,11 @@ async function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]
   // Mount the entire workspace directory (so OpenClaw can create subdirectories)
   mounts.push(`${home}/.openclaw/workspace:/home/node/.openclaw/workspace`);
 
-  // Mount each allowed path into the workspace as subdirectories
+  // Mount each selected path into the workspace, preserving relative path from home
   // Only mount directories - VirtioFS on macOS cannot overlay files on directory mounts
-  for (const sourcePath of pathsToMount) {
-    const mountName = basename(sourcePath);
-
+  for (const sourcePath of mountPaths) {
     // Skip .openclaw directory - it's already mounted separately and would conflict
-    if (mountName === '.openclaw' || sourcePath.endsWith('/.openclaw')) {
+    if (sourcePath.includes('/.openclaw') || sourcePath.endsWith('.openclaw')) {
       continue;
     }
 
@@ -136,7 +122,13 @@ async function generateVolumeMounts(openclawRoot: string, pathsToMount: string[]
       continue; // Skip if we can't stat the path
     }
 
-    const containerPath = `/home/node/.openclaw/workspace/${mountName}`;
+    // Get relative path from home to preserve folder structure
+    // e.g., /Users/james/Desktop/Custom Resume -> Desktop/Custom Resume
+    const relativePath = sourcePath.startsWith(home + '/')
+      ? sourcePath.slice(home.length + 1)
+      : basename(sourcePath);
+
+    const containerPath = `/home/node/.openclaw/workspace/${relativePath}`;
     mounts.push(`${sourcePath}:${containerPath}`);
   }
 
